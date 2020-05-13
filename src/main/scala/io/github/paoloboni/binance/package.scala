@@ -31,6 +31,7 @@ import scala.collection.immutable
 import scala.concurrent.duration.{Duration, _}
 
 package object binance {
+
   case class BinanceConfig(
       scheme: String,
       host: String,
@@ -47,9 +48,11 @@ package object binance {
   case class Price(symbol: String, price: BigDecimal)
 
   trait AssetTag
+
   type Asset = String @@ AssetTag
 
   trait OrderIdTag
+
   type OrderId = String @@ OrderIdTag
 
   case class Balance(free: BigDecimal, locked: BigDecimal)
@@ -69,6 +72,7 @@ package object binance {
   )
 
   object KLine {
+
     implicit class Ops(val kline: KLine) extends AnyVal {
       def convert(other: KLine): KLine = KLine(
         kline.openTime,
@@ -84,6 +88,7 @@ package object binance {
         kline.takerBuyQuoteAssetVolume
       )
     }
+
   }
 
   sealed trait OrderSide extends EnumEntry
@@ -92,7 +97,9 @@ package object binance {
     val values = findValues
 
     case object SELL extends OrderSide
-    case object BUY  extends OrderSide
+
+    case object BUY extends OrderSide
+
   }
 
   sealed trait OrderType extends EnumEntry
@@ -100,13 +107,20 @@ package object binance {
   object OrderType extends Enum[OrderType] {
     val values = findValues
 
-    case object LIMIT             extends OrderType
-    case object MARKET            extends OrderType
-    case object STOP_LOSS         extends OrderType
-    case object STOP_LOSS_LIMIT   extends OrderType
-    case object TAKE_PROFIT       extends OrderType
+    case object LIMIT extends OrderType
+
+    case object MARKET extends OrderType
+
+    case object STOP_LOSS extends OrderType
+
+    case object STOP_LOSS_LIMIT extends OrderType
+
+    case object TAKE_PROFIT extends OrderType
+
     case object TAKE_PROFIT_LIMIT extends OrderType
-    case object LIMIT_MAKER       extends OrderType
+
+    case object LIMIT_MAKER extends OrderType
+
   }
 
   sealed trait TimeInForce extends EnumEntry
@@ -124,47 +138,60 @@ package object binance {
   object OrderCreateResponseType extends Enum[OrderCreateResponseType] {
     val values = findValues
 
-    case object ACK    extends OrderCreateResponseType
+    case object ACK extends OrderCreateResponseType
+
     case object RESULT extends OrderCreateResponseType
-    case object FULL   extends OrderCreateResponseType
+
+    case object FULL extends OrderCreateResponseType
+
   }
 
   case class OrderCreate(
       symbol: String,
       side: OrderSide,
       `type`: OrderType,
-      timeInForce: Option[TimeInForce],
-      quantity: BigDecimal,
-      price: Option[BigDecimal],
-      newClientOrderId: Option[String],
-      stopPrice: Option[BigDecimal],
-      icebergQty: Option[BigDecimal],
-      newOrderRespType: Option[OrderCreateResponseType]
+      timeInForce: Option[TimeInForce] = None,
+      quantity: Option[BigDecimal] = None,
+      quoteOrderQty: Option[BigDecimal] = None,
+      price: Option[BigDecimal] = None,
+      newClientOrderId: Option[String] = None,
+      stopPrice: Option[BigDecimal] = None,
+      icebergQty: Option[BigDecimal] = None,
+      newOrderRespType: Option[OrderCreateResponseType] = None
   )
 
   sealed trait RateLimitType extends EnumEntry
+
   object RateLimitType extends Enum[RateLimitType] with CirceEnum[RateLimitType] {
 
     override def values = findValues
 
     case object REQUEST_WEIGHT extends RateLimitType
-    case object ORDERS         extends RateLimitType
-    case object RAW_REQUESTS   extends RateLimitType
+
+    case object ORDERS extends RateLimitType
+
+    case object RAW_REQUESTS extends RateLimitType
+
   }
 
   sealed trait RateLimitInterval extends EnumEntry
+
   object RateLimitInterval extends Enum[RateLimitInterval] with CirceEnum[RateLimitInterval] {
 
     override def values = findValues
 
     case object SECOND extends RateLimitInterval
+
     case object MINUTE extends RateLimitInterval
-    case object DAY    extends RateLimitInterval
+
+    case object DAY extends RateLimitInterval
+
   }
 
   case class RateLimit(rateLimitType: RateLimitType, interval: RateLimitInterval, intervalNum: Int, limit: Int)
 
   trait Decoders {
+
     import cats.syntax.all._
 
     implicit val klineDecoder: Decoder[KLine] = (
@@ -189,26 +216,40 @@ package object binance {
   object Interval extends Enum[Interval] {
     val values: immutable.IndexedSeq[Interval] = findValues
 
-    case object `1m`  extends Interval(1.minute)
-    case object `3m`  extends Interval(3.minutes)
-    case object `5m`  extends Interval(5.minutes)
+    case object `1m` extends Interval(1.minute)
+
+    case object `3m` extends Interval(3.minutes)
+
+    case object `5m` extends Interval(5.minutes)
+
     case object `15m` extends Interval(15.minutes)
+
     case object `30m` extends Interval(30.minutes)
-    case object `1h`  extends Interval(1.hour)
-    case object `2h`  extends Interval(2.hours)
-    case object `4h`  extends Interval(4.hours)
-    case object `6h`  extends Interval(6.hours)
-    case object `8h`  extends Interval(8.hours)
+
+    case object `1h` extends Interval(1.hour)
+
+    case object `2h` extends Interval(2.hours)
+
+    case object `4h` extends Interval(4.hours)
+
+    case object `6h` extends Interval(6.hours)
+
+    case object `8h` extends Interval(8.hours)
+
     case object `12h` extends Interval(12.hours)
-    case object `1d`  extends Interval(1.day)
-    case object `3d`  extends Interval(3.days)
-    case object `1w`  extends Interval(7.days)
+
+    case object `1d` extends Interval(1.day)
+
+    case object `3d` extends Interval(3.days)
+
+    case object `1w` extends Interval(7.days)
 
     private val durationMap = values.map(entry => entry.duration -> entry).toMap
 
     implicit class Ops(val interval: Interval) extends AnyVal {
       def asDuration: Duration = interval.duration
     }
+
     implicit class DurationOps(val duration: Duration) extends AnyVal {
       def asBinanceInterval: Option[Interval] = durationMap.get(duration)
     }
@@ -217,7 +258,9 @@ package object binance {
   }
 
   case class BinanceBalance(asset: String, free: BigDecimal, locked: BigDecimal)
+
   case class BinanceBalances(balances: Seq[BinanceBalance])
 
   case class CreateOrderResponse(orderId: Long)
+
 }
