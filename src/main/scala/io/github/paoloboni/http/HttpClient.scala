@@ -68,9 +68,9 @@ sealed class HttpClient[F[_]: ContextShift: ConcurrentEffect: Client: LogWriter]
   ): F[Response] = {
     val request = Request[F](
       method = Method.POST,
-      uri = Uri.unsafeFromString(url.toStringPunycode),
+      uri = Uri.unsafeFromString(s"${url.toStringPunycode}?$requestBody"),
       headers = Headers(headers.map((Header.apply _).tupled).toList)
-    ).withEntity(requestBody)
+    )
     sendRequest(request, weight)
   }
 

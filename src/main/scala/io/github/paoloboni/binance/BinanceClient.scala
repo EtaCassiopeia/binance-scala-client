@@ -156,7 +156,7 @@ sealed class BinanceClient[F[_]: ContextShift: Timer: LogWriter] private (config
     *
     * @return The id of the order created
     */
-  def createOrder(orderCreate: OrderCreate): F[OrderId] = {
+  def createOrder(orderCreate: OrderCreate, createTestOrder: Boolean = false): F[OrderId] = {
 
     def urlAndBody(currentMillis: Long) = {
       val requestBody = QueryStringConverter[OrderCreate].to(orderCreate) + s"&recvWindow=5000&timestamp=$currentMillis"
@@ -165,7 +165,7 @@ sealed class BinanceClient[F[_]: ContextShift: Timer: LogWriter] private (config
         scheme = config.scheme,
         host = config.host,
         port = config.port,
-        path = "/api/v3/order"
+        path = "/api/v3/order" + (if (createTestOrder) "/test" else "")
       )
       (url, requestBody + s"&signature=$signature")
     }

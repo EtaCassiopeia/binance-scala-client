@@ -49,7 +49,12 @@ object QueryStringConverter {
         case ""       => Success(None)
         case nonEmpty => QueryStringConverter[T].from(nonEmpty).map(Some(_))
       }
-      def to(obj: Option[T]): String = obj.map(QueryStringConverter[T].to).getOrElse("")
+      def to(obj: Option[T]): String =
+        obj
+          .map { v =>
+            QueryStringConverter[T].to(v)
+          }
+          .getOrElse("")
     }
 
   implicit val stringConverter: QueryStringConverter[String] = new QueryStringConverter[String] {
@@ -94,8 +99,12 @@ object QueryStringConverter {
     }
 
     override def to(hList: FieldType[K, H] :: T): String = hList match {
-      case h :: HNil => witness.value.name + "=" + scv.value.to(h)
-      case h :: t    => witness.value.name + "=" + scv.value.to(h) + "&" + sct.to(t)
+      case h :: HNil =>
+        val value = scv.value.to(h)
+        Option.when(!value.isEmpty)(value).map(v => witness.value.name + "=" + v).getOrElse("")
+      case h :: t =>
+        val value = scv.value.to(h)
+        Option.when(!value.isEmpty)(value).map(v => witness.value.name + "=" + v + "&").getOrElse("") + sct.to(t)
     }
   }
 
